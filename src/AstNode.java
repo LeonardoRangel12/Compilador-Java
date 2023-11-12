@@ -1,18 +1,49 @@
 import java.util.List;
 
 abstract class AstNode {
+    static int varCont = 0;
+    static int labelCont = 0;
+    // static SymbolTable symbolTable = new SymbolTable();
+
+    public String printIntermediateCode() {
+        return "WIP";
+    };
+
     public void printAST() {
     }
 }
 
 class Program extends AstNode {
-    List<Decl> decls;
+    static List<Decl> decls;
     List<AstNode> stmts;
 
     public Program(List<Decl> decls, List<AstNode> stmts) {
-        this.decls = decls;
+        Program.decls = decls;
         this.stmts = stmts;
-        printAST();
+        System.out.println(printIntermediateCode());
+    }
+
+    public String printIntermediateCode() {
+        String program = "";
+        program = program + "BEGIN\n";
+        for (Decl decl : decls) {
+            program = program + decl.printIntermediateCode();
+        }
+        for (AstNode stmt : stmts) {
+            program = program + stmt.printIntermediateCode();
+        }
+        program = program + "END";
+        return program;
+
+    }
+
+    public static Decl getDecl(String id) {
+        for (Decl decl : decls) {
+            if (decl.id.equals(id)) {
+                return decl;
+            }
+        }
+        return null;
     }
 
     public void printAST() {
@@ -26,6 +57,7 @@ class Program extends AstNode {
             stmt.printAST();
         }
     }
+
 }
 
 class Scope extends AstNode {
@@ -35,6 +67,17 @@ class Scope extends AstNode {
     public Scope(List<Decl> decls, List<AstNode> stmts) {
         this.decls = decls;
         this.stmts = stmts;
+    }
+
+    public String printIntermediateCode() {
+        String scope = "";
+        for (Decl decl : decls) {
+            scope = scope + decl.printIntermediateCode();
+        }
+        for (AstNode stmt : stmts) {
+            scope = scope + stmt.printIntermediateCode();
+        }
+        return scope + "\n";
     }
 
     public void printAST() {
@@ -60,6 +103,13 @@ class Decl extends AstNode {
     public Decl(String id, Expr expr) {
         this.id = id;
         this.expr = expr;
+        // symbolTable.setVar(this);
+    }
+
+    public String printIntermediateCode() {
+        
+        String response = "t" + varCont++ + " = " + expr.printIntermediateCode() + "\n";
+        return response;
     }
 
     public void printAST() {
@@ -72,11 +122,16 @@ class Decl extends AstNode {
 
 class Assign extends AstNode {
     String id;
-    AstNode expr;
+    Expr expr;
 
-    public Assign(String id, AstNode expr) {
+    public Assign(String id, Expr expr) {
         this.id = id;
         this.expr = expr;
+    }
+
+    public String printIntermediateCode() {
+        String response = id + " = " + expr.printIntermediateCode() + "\n";
+        return response;
     }
 
     public void printAST() {
@@ -96,6 +151,15 @@ class While extends AstNode {
         this.stmts = stmts;
     }
 
+    public String printIntermediateCode(){
+        String response = "L" + labelCont++ + ": ";
+        response = response + "if " + cond.printIntermediateCode() + " GOTO L" + labelCont++ + "\n";
+        response = response + stmts.printIntermediateCode();
+        response = response + "GOTO L" + (labelCont - 2) + "\n";
+        response = response + "L" + (labelCont - 1) + ": \n";
+        return response;
+    }
+
     public void printAST() {
         System.out.println("While");
         System.out.println("  cond: ");
@@ -108,18 +172,29 @@ class While extends AstNode {
 class If extends AstNode {
     Condition cond;
     Scope ifStmts;
-    Scope elseStmts;
+    // Scope elseStmts;
 
-    public If(Condition cond, Scope ifStmts, Scope elseStmts) {
-        this.cond = cond;
-        this.ifStmts = ifStmts;
-        this.elseStmts = elseStmts;
-    }
+    // public If(Condition cond, Scope ifStmts, Scope elseStmts) {
+    //     this.cond = cond;
+    //     this.ifStmts = ifStmts;
+    //     this.elseStmts = elseStmts;
+    // }
 
     public If(Condition cond, Scope ifStmts) {
         this.cond = cond;
         this.ifStmts = ifStmts;
-        this.elseStmts = null;
+        // this.elseStmts = null;
+    }
+
+    public String printIntermediateCode(){
+        String response = "L" + labelCont++ + ": ";
+        response = response + "if " + cond.printIntermediateCode() + " GOTO L" + labelCont++ + "\n";
+        response = response + "GOTO L" + (labelCont++) + "\n";
+        response = response + "L" + (labelCont -2) + ":\n";
+        response = response + ifStmts.printIntermediateCode();
+        response = response + "GOTO L" + (labelCont - 1) + "\n";
+        response = response + "L" + (labelCont - 1) + ": \n";
+        return response;
     }
 
     public void printAST() {
@@ -128,20 +203,20 @@ class If extends AstNode {
         cond.printAST();
         System.out.println("  IFSTMTS: ");
         ifStmts.printAST();
-        if (elseStmts != null) {
-            System.out.println("  ELSESTMTS: ");
-            elseStmts.printAST();
-        }
+        // if (elseStmts != null) {
+        //     System.out.println("  ELSESTMTS: ");
+        //     elseStmts.printAST();
+        // }
     }
 }
 
 class Condition extends AstNode {
 
-    AstNode left;
-    OpRel op;
-    AstNode right;
+    Expr left;
+    private OpRel op;
+    Expr right;
 
-    public Condition(AstNode left, Object op, AstNode right) {
+    public Condition(Expr left, Object op, Expr right) {
         this.left = left;
         switch (op.toString()) {
 
@@ -175,9 +250,30 @@ class Condition extends AstNode {
         this.right = right;
     }
 
-    public Condition(AstNode left, AstNode right) {
-        this.left = left;
-        this.right = right;
+    public String printIntermediateCode() {
+        String response = left.printIntermediateCode() + " " + getOp() + " " + right.printIntermediateCode();
+        return response;
+    }
+    private String getOp(){
+        if(op == OpRel.EQ){
+            return "==";
+        }
+        if(op == OpRel.NEQ){
+            return "!=";
+        }
+        if(op == OpRel.LE){
+            return "<";
+        }
+        if(op == OpRel.GT){
+            return ">";
+        }
+        if(op == OpRel.LEQ){
+            return "<=";
+        }
+        if(op == OpRel.GTQ){
+            return ">=";
+        }
+        return "";
     }
 
     public void printAST() {
@@ -205,7 +301,7 @@ class Expr extends AstNode {
             System.out.println("Error: Both expressions must be of the same type");
             System.exit(1);
         }
-        
+
         // Makes the operation
         this.value = makeOperation(e1, OP, e2);
 
@@ -217,6 +313,21 @@ class Expr extends AstNode {
             this.type = Type.FLOAT;
             this.value = Float.parseFloat(this.value.toString());
         }
+    }
+
+    public String printIntermediateCode() {
+        if (type == Type.STRING)
+            return "\"" + value.toString() + "\"";
+        else if (type == Type.IDENT) {
+            if (Program.getDecl(value.toString()) == null) {
+                throw new IllegalArgumentException("Error: Variable " + value.toString() + " not declared");
+            } 
+            return "t" + Program.getDecl(value.toString()).printIntermediateCode();
+        
+            
+        }
+        else
+            return value.toString();
     }
 
     private static Float makeOperation(Expr e1, Object OP, Expr e2) {
@@ -271,6 +382,11 @@ class Read extends AstNode {
         this.id = id;
     }
 
+    public String printIntermediateCode() {
+        String response = id + " = " + "read()\n";
+        return response;
+    }
+
     public void printAST() {
         System.out.println("Read");
         System.out.println("  id: " + id);
@@ -282,6 +398,11 @@ class Write extends AstNode {
 
     public Write(AstNode expr) {
         this.expr = expr;
+    }
+
+    public String printIntermediateCode() {
+        String response = "write(" + expr.printIntermediateCode() + ")\n";
+        return response;
     }
 
     public void printAST() {

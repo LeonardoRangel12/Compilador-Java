@@ -433,7 +433,7 @@ class CUP$Parser$actions {
 		int sl2left = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int sl2right = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Scope sl2 = (Scope)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		 RESULT = new If(c, sl, sl2); 
+		 RESULT = new If(c, sl); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("if",7, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

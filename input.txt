@@ -1,6 +1,7 @@
 int x = 0 + 1, string z = "a"
 while 3 / 2 == 3 {
     float y = 2.31
+    y = 3
     read(y)
 }
 if 0 < 3{
