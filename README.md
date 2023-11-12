@@ -10,7 +10,7 @@
 ## Como ejecutar
 
 Se tiene que tener java jdk instalado (yo tengo la versión de openJDK 21)
-
+<a href="https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1+12/OpenJDK21U-jdk_x64_windows_hotspot_21.0.1_12.msi">Descargar</a>
 Hay dos maneras
 Abrir el proyecto con VS Code y utilizar <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> para acceder a los comandos de VSCode y ejecutar <span style="color:red; background-color:lightgrey; padding:3px 5px;">run-main</span>
 
