@@ -97,12 +97,25 @@ class Scope extends AstNode {
 }
 
 class Decl extends AstNode {
+    private Type type;
     private String id;
     private Expr expr;
 
-    public Decl(String id, Expr expr) {
+    public Decl(Type type, String id) {
+        this.type = type;
+        this.id = id;
+        this.expr = null;
+        symbolTable.setVar(this);
+    }
+
+    public Decl(Type type, String id, Expr expr) {
+        this.type = type;
         this.id = id;
         this.expr = expr;
+        // Check if the variable and the expression are of the same type
+        if(!expr.getType().equals(type) || type.equals(Type.FLOAT) && expr.getType().equals(Type.INT)){
+            throw new IllegalArgumentException("Error: Variable " + id + " and expression " + expr.getValue() + " are not of the same type");
+        }
         symbolTable.setVar(this);
     }
 
@@ -114,6 +127,10 @@ class Decl extends AstNode {
 
     public String getName() {
         return id;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public Object getValue() {
@@ -133,9 +150,16 @@ class Assign extends AstNode {
     Expr expr;
 
     public Assign(String id, Expr expr) {
-        if (symbolTable.getVar(id) == null) {
+        Decl decl = symbolTable.getVar(id);
+        // Check if the variable is declared
+        if (decl == null) {
             throw new IllegalArgumentException("Error: Variable " + id + " not declared");
         }
+        // Check if the variable and the expression are of the same type
+        if (decl.getType() == expr.getType() || decl.getType() == Type.FLOAT && expr.getType() == Type.INT) {
+            throw new IllegalArgumentException("Error: Variable " + id + " and expression are not of the same type");
+        }
+
         this.id = id;
         this.expr = expr;
     }
@@ -227,65 +251,19 @@ class Condition extends AstNode {
     private OpRel op;
     Expr right;
 
-    public Condition(Expr left, Object op, Expr right) {
-        this.left = left;
-        switch (op.toString()) {
-
-            // EQ
-            case "25":
-                this.op = OpRel.EQ;
-                break;
-            // NEQ
-            case "26":
-                this.op = OpRel.NEQ;
-                break;
-            // LE
-            case "27":
-                this.op = OpRel.LE;
-                break;
-            // GT
-            case "28":
-                this.op = OpRel.GT;
-                break;
-            // LEQ
-            case "29":
-                this.op = OpRel.LEQ;
-                break;
-            // GTQ
-            case "30":
-                this.op = OpRel.GTQ;
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected value: " + op.toString());
+    public Condition(Expr left, OpRel op, Expr right) {
+        // Check if both expressions are of the same type or if they are int and float
+        if(!left.getType().equals(right.getType()) && !(left.getType().equals(Type.FLOAT) && right.getType().equals(Type.INT))){
+            throw new IllegalArgumentException("Error: Expressions " + left.getValue() + " and " + right.getValue() + " are not of the same type");
         }
+        this.left = left;
+        this.op = op;
         this.right = right;
     }
 
     public String printIntermediateCode() {
-        String response = left.printIntermediateCode() + " " + getOp() + " " + right.printIntermediateCode();
+        String response = left.printIntermediateCode() + " " + OpRel.getOp(op) + " " + right.printIntermediateCode();
         return response;
-    }
-
-    private String getOp() {
-        if (op == OpRel.EQ) {
-            return "==";
-        }
-        if (op == OpRel.NEQ) {
-            return "!=";
-        }
-        if (op == OpRel.LE) {
-            return "<";
-        }
-        if (op == OpRel.GT) {
-            return ">";
-        }
-        if (op == OpRel.LEQ) {
-            return "<=";
-        }
-        if (op == OpRel.GTQ) {
-            return ">=";
-        }
-        return "";
     }
 
     public void printAST() {
@@ -299,7 +277,7 @@ class Condition extends AstNode {
 
 class Expr extends AstNode {
 
-    Type type;
+    private Type type;
     private Object value;
 
     public Expr(Object value, Type type) {
@@ -307,13 +285,33 @@ class Expr extends AstNode {
         this.value = value;
     }
 
+    public Type getType() {
+        // If it is an identifier, get its type from the symbol table
+        if(type == Type.IDENT){
+            Decl decl = symbolTable.getVar(value.toString());
+            if (decl == null) {
+                throw new IllegalArgumentException("Error: Variable " + value.toString() + " not declared");
+            }
+            return decl.getType();
+        }
+        // If it is another type, return it
+        return type;
+    }
+
     public String getValue() {
+        if(type == Type.IDENT){
+            return symbolTable.getEquivalent(value.toString());
+        }
+        if (type == Type.STRING) {
+            return "\"" + value.toString() + "\"";
+            
+        }
         return value.toString();
     }
 
-    public Expr(Expr e1, Object OP, Expr e2) {
+    public Expr(Expr e1, OpArit OP, Expr e2) {
         // Check if both expressions are of the same type
-        if (e1.type == Type.STRING || e2.type == Type.STRING) {
+        if (e1.type.equals(Type.STRING) || e2.type.equals(Type.STRING)) {
             System.out.println("Error: Both expressions must be of the same type");
             System.exit(1);
         }
@@ -332,20 +330,23 @@ class Expr extends AstNode {
     }
 
     public String printIntermediateCode() {
-        if (type == Type.STRING)
+        // If it is a string, return it with quotes
+        if (type.equals(Type.STRING))
             return "\"" + value.toString() + "\"";
-        else if (type == Type.IDENT) {
-            Decl decl = symbolTable.getVar(value.toString());
-            if (decl == null) {
+        // If it is an identifier, get its value from the symbol table
+        else if (type.equals(Type.IDENT)) {
+            String equivalent = symbolTable.getEquivalent(value.toString());
+            if (equivalent == null) {
                 throw new IllegalArgumentException("Error: Variable " + value.toString() + " not declared");
             }
-            return decl.getValue().toString();
+            return equivalent;
 
         } else
+        // If it is an integer or a float, return it as it is
             return value.toString();
     }
 
-    private static Float makeOperation(Expr e1, Object OP, Expr e2) {
+    private static Float makeOperation(Expr e1, OpArit OP, Expr e2) {
         String left = e1.value.toString();
         String right = e2.value.toString();
 
@@ -358,30 +359,30 @@ class Expr extends AstNode {
         }
         if (e2.type == Type.IDENT) {
             Decl decl = symbolTable.getVar(right);
-            
+
             if (decl == null) {
                 throw new IllegalArgumentException("Error: Variable " + right + " not declared");
             }
             right = decl.getValue().toString();
         }
 
-        switch (OP.toString()) {
+        switch (OP) {
             // PLUS
-            case "18":
+            case PLUS:
                 return Float.parseFloat(left) + Float.parseFloat(right);
             // MINUS
-            case "19":
+            case MINUS:
                 return Float.parseFloat(left) - Float.parseFloat(right);
             // MULT
-            case "20":
+            case MULT:
                 return Float.parseFloat(left) * Float.parseFloat(right);
             // DIV
-            case "21":
+            case DIV:
                 if (isCero(e2.value))
                     throw new IllegalArgumentException("Error: Division by zero");
                 return Float.parseFloat(left) / Float.parseFloat(right);
             // MOD
-            case "22":
+            case MOD:
                 if (isCero(e2.value))
                     throw new IllegalArgumentException("Error: Division by zero");
                 return Float.parseFloat(left) % Float.parseFloat(right);
@@ -413,7 +414,7 @@ class Read extends AstNode {
     String id;
 
     public Read(String id) {
-        if(symbolTable.getEquivalent(id) == null){
+        if (symbolTable.getEquivalent(id) == null) {
             throw new IllegalArgumentException("Error: Variable " + id + " not declared");
         }
         this.id = id;
@@ -441,8 +442,6 @@ class Write extends AstNode {
         String response = "write(" + expr.printIntermediateCode() + ")\n";
         return response;
     }
-
-
 
     public void printAST() {
         System.out.println("Write");

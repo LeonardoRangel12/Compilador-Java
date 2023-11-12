@@ -16,10 +16,12 @@ parser code {:
 :}; 
 /* Terminals */
 terminal         SEMICOLON, COMMA, LPAR, RPAR, BEGIN, END,IF, ELSE, WHILE, READ, WRITE, ASSIGN;
-terminal Integer TYPE, BINOP, COMP, INTCONST, PLUS, MINUS, MULT, DIV, MOD, LEQ, GTQ, EQ, NEQ, LE, GT;
+terminal INTCONST, PLUS, MINUS, MULT, DIV, MOD, LEQ, GTQ, EQ, NEQ, LE, GT;
+terminal OpArit BINOP;
 terminal String  IDENT,STRINGCONST;
 terminal Float  FLOATCONST;
-
+terminal Type   TYPE;
+terminal OpRel COMP;
 /* Non-terminals */
 non terminal Program        program;
 non terminal List<Decl>     decllist;
@@ -40,8 +42,8 @@ decllist ::= decl:d {: List<Decl> dl = new ArrayList<Decl>(); dl.add(d); RESULT 
            | decllist:dl COMMA decl:d{: dl.add(d); RESULT = dl; :}
            | {: RESULT = new ArrayList<Decl>(); :};
 
-decl ::= TYPE IDENT:id{: RESULT = new Decl(id, null); :}
-       | TYPE IDENT:id ASSIGN expr:e {: RESULT = new Decl(id, e); :};
+decl ::= TYPE:type IDENT:id{: RESULT = new Decl(type, id, null); :}
+       | TYPE:type IDENT:id ASSIGN expr:e {: RESULT = new Decl(type, id, e); :};
 
 scope ::= BEGIN decllist:dl stmtlist:sl END {: RESULT = new Scope(dl, sl); :};
 

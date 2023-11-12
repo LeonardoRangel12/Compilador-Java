@@ -11,7 +11,6 @@ public class Symbol {
     public Decl getVar() {
             return decl;
     }
-
     public String getVarName(){
         return decl.getName();
     }

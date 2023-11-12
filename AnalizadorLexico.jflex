@@ -23,7 +23,6 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
   private Symbol symbol(String name, int sym) {
       return symbolFactory.newSymbol(name, sym, new Location(yyline+1,yycolumn+1,(int)yychar), new Location(yyline+1,yycolumn+yylength(),(int)(yychar+yylength())));
   }
-  
   private Symbol symbol(String name, int sym, Object val) {
       Location left = new Location(yyline+1,yycolumn+1,(int)yychar);
       Location right= new Location(yyline+1,yycolumn+yylength(), (int)(yychar+yylength()));
@@ -66,10 +65,9 @@ white_space = {new_line} | [ \t\f]
 
 
 /* types */
-"int" { return symbol("int", TYPE);}
-"bool" { return symbol("bool",TYPE);}
-"string" { return symbol("string",TYPE);}
-"float" { return symbol("float",TYPE);}
+"int" { return symbol("int", TYPE, Type.INT);}
+"string" { return symbol("string",TYPE, Type.STRING);}
+"float" { return symbol("float",TYPE, Type.FLOAT);}
 /* names */
 {Ident}           { return symbol("Identifier",IDENT, yytext()); }
   
@@ -94,17 +92,17 @@ white_space = {new_line} | [ \t\f]
 "{"               { return symbol("{",BEGIN); }
 "}"               { return symbol("}",END); }
 "="               { return symbol("=",ASSIGN); }
-"+"               { return symbol("plus",BINOP, new Integer( PLUS ) ); }
-"-"               { return symbol("minus",BINOP, new Integer( MINUS ) ); }
-"*"               { return symbol("mult",BINOP, new Integer( MULT ) ); }
-"/"               { return symbol("div",BINOP, new Integer( DIV ) ); }
-"%"               { return symbol("mod",BINOP, new Integer( MOD ) ); }
-"<="              { return symbol("leq",COMP,  new Integer( LEQ ) ); }
-">="              { return symbol("gtq",COMP,  new Integer( GTQ ) ); }
-"=="              { return symbol("eq",COMP,  new Integer( EQ  ) ); }
-"!="              { return symbol("neq",COMP,  new Integer( NEQ ) ); }
-"<"               { return symbol("le",COMP,  new Integer( LE  ) ); }
-">"               { return symbol("gt",COMP,  new Integer( GT  ) ); }
+"+"               { return symbol("plus",BINOP,  OpArit.PLUS  ); }
+"-"               { return symbol("minus",BINOP,  OpArit.MINUS  ); }
+"*"               { return symbol("mult",BINOP,  OpArit.MULT  ); }
+"/"               { return symbol("div",BINOP,  OpArit.DIV  ); }
+"%"               { return symbol("mod",BINOP,  OpArit.MOD  ); }
+"<="              { return symbol("leq",COMP,  OpRel.LEQ  ); }
+">="              { return symbol("gtq",COMP,  OpRel.GTQ  ); }
+"=="              { return symbol("eq",COMP,  OpRel.EQ   ); }
+"!="              { return symbol("neq",COMP,  OpRel.NEQ  ); }
+"<"               { return symbol("le",COMP,  OpRel.LE   ); }
+">"               { return symbol("gt",COMP,  OpRel.GT   ); }
 
 
 
