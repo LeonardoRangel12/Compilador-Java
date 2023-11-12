@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "compile-jflex",
+        "type": "shell",
+        "command": "jflex -d ./src ./AnalizadorLexico.jflex",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "compile-cup",
+        "type": "shell",
+        "command": "java -jar ./lib/java-cup-11b.jar -destdir ./src -parser Parser -symbols sym -interface -expect 1 ./sintax.cup",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "run-main",
+        "type": "shell",
+        "command": "jflex -d ./src ./AnalizadorLexico.jflex; & java -jar ./lib/java-cup-11b.jar -destdir ./src -parser Parser -symbols sym -interface -expect 1 ./sintax.cup; & java -cp 'C:\\Users\\leona\\Escritorio\\Semantico\\bin;c:\\Users\\leona\\Escritorio\\Semantico\\lib\\java-cup-11b-runtime.jar;c:\\Users\\leona\\Escritorio\\Semantico\\lib\\java-cup-11b.jar' App ./input.txt",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }
+  

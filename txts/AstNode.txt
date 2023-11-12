@@ -1,0 +1,136 @@
+import java.util.List;
+
+abstract class AstNode {}
+
+class Program extends AstNode {
+    List<Decl> decls;
+    List<AstNode> stmts;
+
+    public Program(List<Decl> decls, List<AstNode> stmts) {
+        this.decls = decls;
+        this.stmts = stmts;
+    }
+}
+
+class Decl extends AstNode {
+    String id;
+    AstNode expr;
+
+    public Decl(String id, AstNode expr) {
+        this.id = id;
+        this.expr = expr;
+    }
+}
+
+class Assign extends AstNode {
+    String id;
+    AstNode expr;
+
+    public Assign(String id, AstNode expr) {
+        this.id = id;
+        this.expr = expr;
+    }
+}
+
+class While extends AstNode {
+    Condition cond;
+    List<AstNode> stmts;
+
+    public While(Condition cond, List<AstNode> stmts) {
+        this.cond = cond;
+        this.stmts = stmts;
+    }
+}
+
+class If extends AstNode {
+    Condition cond;
+    List<AstNode> ifStmts;
+    List<AstNode> elseStmts;
+
+    public If(Condition cond, List<AstNode> ifStmts, List<AstNode> elseStmts) {
+        this.cond = cond;
+        this.ifStmts = ifStmts;
+        this.elseStmts = elseStmts;
+    }
+}
+
+class Scope extends AstNode {
+    List<AstNode> stmts;
+
+    public Scope(List<AstNode> stmts) {
+        this.stmts = stmts;
+    }
+}
+
+class IntConst extends AstNode {
+    int value;
+
+    public IntConst(int value) {
+        this.value = value;
+    }
+}
+
+class FloatConst extends AstNode {
+    float value;
+
+    public FloatConst(float value) {
+        this.value = value;
+    }
+}
+
+class StringConst extends AstNode {
+    String value;
+
+    public StringConst(String value) {
+        this.value = value;
+    }
+}
+
+class Ident extends AstNode {
+    String id;
+
+    public Ident(String id) {
+        this.id = id;
+    }
+}
+
+class UnaryOp extends AstNode {
+    AstNode expr;
+
+    public UnaryOp(AstNode expr) {
+        this.expr = expr;
+    }
+}
+
+class BinaryOp extends AstNode {
+    AstNode left;
+    AstNode right;
+
+    public BinaryOp(AstNode left, AstNode right) {
+        this.left = left;
+        this.right = right;
+    }
+}
+
+class Condition extends AstNode {
+    AstNode left;
+    AstNode right;
+
+    public Condition(AstNode left, AstNode right) {
+        this.left = left;
+        this.right = right;
+    }
+}
+
+class Expr extends AstNode {
+    AstNode expr;
+
+    public Expr(AstNode expr) {
+        this.expr = expr;
+    }
+}
+
+
+enum AssignOp {
+    ASSIGN
+}

@@ -1,0 +1,90 @@
+import java.util.*;
+import java.io.*;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+import java_cup.runtime.ComplexSymbolFactory;
+parser code {: 
+  public boolean syntaxErrors;
+
+
+  Lexer lexer;
+ 
+  public Parser(Lexer lex, ComplexSymbolFactory sf) {
+    super(lex,sf);
+    lexer = lex;
+  }
+:}; 
+/* Terminals */
+terminal         SEMICOLON, COMMA, LPAR, RPAR, BEGIN, END,IF, ELSE, WHILE, READ, WRITE, ASSIGN;
+terminal Integer TYPE, BINOP, COMP, INTCONST, PLUS, MINUS, MULT, DIV, MOD, LEQ, GTQ, EQ, NEQ, LE, GT;
+terminal String  IDENT,STRINGCONST;
+terminal Float  FLOATCONST;
+
+/* Grammar rules */
+program ::= decllist EOF {: RESULT = new Program($1); :};
+
+decllist ::= decl {: List<Decl> list = new ArrayList<>(); list.add($1); RESULT = list; :}
+  | decllist decl {: $1.add($2); RESULT = $1; :};
+
+decl ::= varDecl {: RESULT = $1; :}
+  | stmt {: RESULT = $1; :};
+
+varDecl ::= type IDENT {: List<String> idList = new ArrayList<>(); idList.add($2); RESULT = new VarDecl($1, idList); :}
+  | varDecl COMMA IDENT {: $1.getIdList().add($3); RESULT = $1; :};
+
+stmt ::= ifStmt {: RESULT = $1; :}
+  | whileStmt {: RESULT = $1; :}
+  | assignStmt {: RESULT = $1; :}
+  | readStmt {: RESULT = $1; :}
+  | writeStmt {: RESULT = $1; :}
+  | scope {: RESULT = $1; :};
+
+ifStmt ::= IF cond stmt ELSE stmt {: RESULT = new If($2, $3, $5); :}
+  | IF cond stmt {: RESULT = new If($2, $3); :};
+
+whileStmt ::= WHILE cond stmt {: RESULT = new While($2, $3); :};
+
+assignStmt ::= IDENT ASSIGN expr SEMICOLON {: RESULT = new Assign($1, $3); :};
+
+readStmt ::= READ IDENT SEMICOLON {: RESULT = new Read($2); :};
+
+writeStmt ::= WRITE expr SEMICOLON {: RESULT = new Write($2); :};
+
+scope ::= BEGIN stmtlist END {: RESULT = new Scope($2); :};
+
+cond ::= expr COMP expr {: RESULT = new Cond($1, $2, $3); :};
+
+expr ::= term {: RESULT = $1; :}
+  | expr binop term {: RESULT = new BinOp($1, $2, $3); :};
+
+term ::= factor {: RESULT = $1; :}
+  | term addop factor {: RESULT = new BinOp($1, $2, $3); :};
+
+factor ::= IDENT {: RESULT = new Ident($1); :}
+  | constant {: RESULT = $1; :}
+  | LPAR expr RPAR {: RESULT = $2; :};
+
+binop ::= PLUS {: RESULT = BinOp.PLUS; :}
+  | MINUS {: RESULT = BinOp.MINUS; :}
+  | MULT {: RESULT = BinOp.MULT; :}
+  | DIV {: RESULT = BinOp.DIV; :}
+  | MOD {: RESULT = BinOp.MOD; :}
+  | LEQ {: RESULT = BinOp.LEQ; :}
+  | GTQ {: RESULT = BinOp.GTQ; :}
+  | EQ {: RESULT = BinOp.EQ; :}
+  | NEQ {: RESULT = BinOp.NEQ; :}
+  | LE {: RESULT = BinOp.LE; :}
+  | GT {: RESULT = BinOp.GT; :};
+
+addop ::= PLUS {: RESULT = BinOp.PLUS; :}
+  | MINUS {: RESULT = BinOp.MINUS; :};
+
+type ::= TYPE {: RESULT = new Type($1); :};
+
+constant ::= INTCONST {: RESULT = new IntConst($1); :}
+  | FLOATCONST {: RESULT = new FloatConst($1); :}
+  | STRINGCONST {: RESULT = new StringConst($1); :};
+
+
+
+
