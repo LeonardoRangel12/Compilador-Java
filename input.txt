@@ -1,12 +1,8 @@
-int x = 0 + 1, string z = "a"
-while 3 / 2 == 3 {
-    float y = 2.31
-    y = 3
-    read(y)
+int x = 4 * 2, int a = 1, string z = "a"
+while 3 / x == a {
+    read(a)
 }
 if 0 < 3{
     read(x)
 }
-else{
-    write(x)
-}
+write(a)

@@ -3,20 +3,33 @@ import java.util.List;
 
 public class SymbolTable {
     static int varCont = 0;
-    private List<Symbol> symbols = new ArrayList<Symbol>(); 
+    private List<Symbol> symbols = new ArrayList<Symbol>();
 
     public SymbolTable() {
     }
 
-    public void setVar(Decl decl){
+    // Adds the variable to the symbol table
+    public void setVar(Decl decl) {
         symbols.add(new Symbol(decl, "t" + varCont++));
     }
 
+    // Returns the variable from the symbol table
     public Decl getVar(String id) {
         for (Symbol symbol : symbols) {
-            Decl decl = symbol.getVar(id);
-            if(decl != null) {
+            Decl decl = symbol.getVar();
+            if (decl.getName().equals(id)) {
                 return decl;
+            }
+        }
+        // If the variable is not found, return null
+        return null;
+    }
+
+    public String getEquivalent(String id) {
+        for (Symbol symbol : symbols) {
+            String equivalent = symbol.getVarName();
+            if (equivalent.equals(id)) {
+                return symbol.getEquivalent();
             }
         }
         return null;

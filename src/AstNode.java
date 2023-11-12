@@ -1,9 +1,9 @@
 import java.util.List;
 
 abstract class AstNode {
-    static int varCont = 0;
+    // static int varCont = 0;
     static int labelCont = 0;
-    // static SymbolTable symbolTable = new SymbolTable();
+    static SymbolTable symbolTable = new SymbolTable();
 
     public String printIntermediateCode() {
         return "WIP";
@@ -39,7 +39,7 @@ class Program extends AstNode {
 
     public static Decl getDecl(String id) {
         for (Decl decl : decls) {
-            if (decl.id.equals(id)) {
+            if (decl.getName() == id) {
                 return decl;
             }
         }
@@ -97,19 +97,27 @@ class Scope extends AstNode {
 }
 
 class Decl extends AstNode {
-    String id;
-    Expr expr;
+    private String id;
+    private Expr expr;
 
     public Decl(String id, Expr expr) {
         this.id = id;
         this.expr = expr;
-        // symbolTable.setVar(this);
+        symbolTable.setVar(this);
     }
 
     public String printIntermediateCode() {
-        
-        String response = "t" + varCont++ + " = " + expr.printIntermediateCode() + "\n";
+
+        String response = symbolTable.getEquivalent(id) + " = " + expr.printIntermediateCode() + "\n";
         return response;
+    }
+
+    public String getName() {
+        return id;
+    }
+
+    public Object getValue() {
+        return expr.getValue();
     }
 
     public void printAST() {
@@ -125,12 +133,15 @@ class Assign extends AstNode {
     Expr expr;
 
     public Assign(String id, Expr expr) {
+        if (symbolTable.getVar(id) == null) {
+            throw new IllegalArgumentException("Error: Variable " + id + " not declared");
+        }
         this.id = id;
         this.expr = expr;
     }
 
     public String printIntermediateCode() {
-        String response = id + " = " + expr.printIntermediateCode() + "\n";
+        String response = symbolTable.getEquivalent(id) + " = " + expr.printIntermediateCode() + "\n";
         return response;
     }
 
@@ -151,7 +162,7 @@ class While extends AstNode {
         this.stmts = stmts;
     }
 
-    public String printIntermediateCode(){
+    public String printIntermediateCode() {
         String response = "L" + labelCont++ + ": ";
         response = response + "if " + cond.printIntermediateCode() + " GOTO L" + labelCont++ + "\n";
         response = response + stmts.printIntermediateCode();
@@ -175,9 +186,9 @@ class If extends AstNode {
     // Scope elseStmts;
 
     // public If(Condition cond, Scope ifStmts, Scope elseStmts) {
-    //     this.cond = cond;
-    //     this.ifStmts = ifStmts;
-    //     this.elseStmts = elseStmts;
+    // this.cond = cond;
+    // this.ifStmts = ifStmts;
+    // this.elseStmts = elseStmts;
     // }
 
     public If(Condition cond, Scope ifStmts) {
@@ -186,11 +197,11 @@ class If extends AstNode {
         // this.elseStmts = null;
     }
 
-    public String printIntermediateCode(){
+    public String printIntermediateCode() {
         String response = "L" + labelCont++ + ": ";
         response = response + "if " + cond.printIntermediateCode() + " GOTO L" + labelCont++ + "\n";
         response = response + "GOTO L" + (labelCont++) + "\n";
-        response = response + "L" + (labelCont -2) + ":\n";
+        response = response + "L" + (labelCont - 2) + ":\n";
         response = response + ifStmts.printIntermediateCode();
         response = response + "GOTO L" + (labelCont - 1) + "\n";
         response = response + "L" + (labelCont - 1) + ": \n";
@@ -204,8 +215,8 @@ class If extends AstNode {
         System.out.println("  IFSTMTS: ");
         ifStmts.printAST();
         // if (elseStmts != null) {
-        //     System.out.println("  ELSESTMTS: ");
-        //     elseStmts.printAST();
+        // System.out.println(" ELSESTMTS: ");
+        // elseStmts.printAST();
         // }
     }
 }
@@ -254,23 +265,24 @@ class Condition extends AstNode {
         String response = left.printIntermediateCode() + " " + getOp() + " " + right.printIntermediateCode();
         return response;
     }
-    private String getOp(){
-        if(op == OpRel.EQ){
+
+    private String getOp() {
+        if (op == OpRel.EQ) {
             return "==";
         }
-        if(op == OpRel.NEQ){
+        if (op == OpRel.NEQ) {
             return "!=";
         }
-        if(op == OpRel.LE){
+        if (op == OpRel.LE) {
             return "<";
         }
-        if(op == OpRel.GT){
+        if (op == OpRel.GT) {
             return ">";
         }
-        if(op == OpRel.LEQ){
+        if (op == OpRel.LEQ) {
             return "<=";
         }
-        if(op == OpRel.GTQ){
+        if (op == OpRel.GTQ) {
             return ">=";
         }
         return "";
@@ -288,11 +300,15 @@ class Condition extends AstNode {
 class Expr extends AstNode {
 
     Type type;
-    Object value;
+    private Object value;
 
     public Expr(Object value, Type type) {
         this.type = type;
         this.value = value;
+    }
+
+    public String getValue() {
+        return value.toString();
     }
 
     public Expr(Expr e1, Object OP, Expr e2) {
@@ -319,38 +335,56 @@ class Expr extends AstNode {
         if (type == Type.STRING)
             return "\"" + value.toString() + "\"";
         else if (type == Type.IDENT) {
-            if (Program.getDecl(value.toString()) == null) {
+            Decl decl = symbolTable.getVar(value.toString());
+            if (decl == null) {
                 throw new IllegalArgumentException("Error: Variable " + value.toString() + " not declared");
-            } 
-            return "t" + Program.getDecl(value.toString()).printIntermediateCode();
-        
-            
-        }
-        else
+            }
+            return decl.getValue().toString();
+
+        } else
             return value.toString();
     }
 
     private static Float makeOperation(Expr e1, Object OP, Expr e2) {
+        String left = e1.value.toString();
+        String right = e2.value.toString();
+
+        if (e1.type == Type.IDENT) {
+            Decl decl = symbolTable.getVar(left);
+            if (decl == null) {
+                throw new IllegalArgumentException("Error: Variable " + left + " not declared");
+            }
+            left = decl.getValue().toString();
+        }
+        if (e2.type == Type.IDENT) {
+            Decl decl = symbolTable.getVar(right);
+            
+            if (decl == null) {
+                throw new IllegalArgumentException("Error: Variable " + right + " not declared");
+            }
+            right = decl.getValue().toString();
+        }
+
         switch (OP.toString()) {
             // PLUS
             case "18":
-                return Float.parseFloat(e1.value.toString()) + Float.parseFloat(e2.value.toString());
+                return Float.parseFloat(left) + Float.parseFloat(right);
             // MINUS
             case "19":
-                return Float.parseFloat(e1.value.toString()) - Float.parseFloat(e2.value.toString());
+                return Float.parseFloat(left) - Float.parseFloat(right);
             // MULT
             case "20":
-                return Float.parseFloat(e1.value.toString()) * Float.parseFloat(e2.value.toString());
+                return Float.parseFloat(left) * Float.parseFloat(right);
             // DIV
             case "21":
                 if (isCero(e2.value))
                     throw new IllegalArgumentException("Error: Division by zero");
-                return Float.parseFloat(e1.value.toString()) / Float.parseFloat(e2.value.toString());
+                return Float.parseFloat(left) / Float.parseFloat(right);
             // MOD
             case "22":
                 if (isCero(e2.value))
                     throw new IllegalArgumentException("Error: Division by zero");
-                return Float.parseFloat(e1.value.toString()) % Float.parseFloat(e2.value.toString());
+                return Float.parseFloat(left) % Float.parseFloat(right);
 
             default:
                 throw new IllegalArgumentException("Unexpected value: " + OP.toString());
@@ -379,11 +413,14 @@ class Read extends AstNode {
     String id;
 
     public Read(String id) {
+        if(symbolTable.getEquivalent(id) == null){
+            throw new IllegalArgumentException("Error: Variable " + id + " not declared");
+        }
         this.id = id;
     }
 
     public String printIntermediateCode() {
-        String response = id + " = " + "read()\n";
+        String response = symbolTable.getEquivalent(id) + " = " + "read()\n";
         return response;
     }
 
@@ -394,9 +431,9 @@ class Read extends AstNode {
 }
 
 class Write extends AstNode {
-    AstNode expr;
+    Expr expr;
 
-    public Write(AstNode expr) {
+    public Write(Expr expr) {
         this.expr = expr;
     }
 
@@ -404,6 +441,8 @@ class Write extends AstNode {
         String response = "write(" + expr.printIntermediateCode() + ")\n";
         return response;
     }
+
+
 
     public void printAST() {
         System.out.println("Write");

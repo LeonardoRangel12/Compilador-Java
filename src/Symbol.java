@@ -1,16 +1,23 @@
 public class Symbol {
-    Decl decl;
-    String id;
+    private Decl decl;
+    private String id;
 
     public Symbol(Decl decl, String id) {
         this.decl = decl;
         this.id = id;
     }
 
-    public Decl getVar(String id) {
-        if(this.id.equals(id)) {
+    // Returns the variable from the symbol table
+    public Decl getVar() {
             return decl;
-        }
-        return null;
+    }
+
+    public String getVarName(){
+        return decl.getName();
+    }
+
+    // Returns the equivalent variable from the symbol table for intermediate code
+    public String getEquivalent() {
+            return this.id;
     }
 }
