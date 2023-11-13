@@ -14,11 +14,9 @@ abstract class AstNode {
 }
 
 class Program extends AstNode {
-    static List<Decl> decls;
     List<AstNode> stmts;
 
-    public Program(List<Decl> decls, List<AstNode> stmts) {
-        Program.decls = decls;
+    public Program(List<AstNode> stmts) {
         this.stmts = stmts;
         System.out.println(printIntermediateCode());
     }
@@ -26,9 +24,8 @@ class Program extends AstNode {
     public String printIntermediateCode() {
         String program = "";
         program = program + "BEGIN\n";
-        for (Decl decl : decls) {
-            program = program + decl.printIntermediateCode();
-        }
+        // Prints the intermediate code for the declarations
+        // program = program + symbolTable.printIntermediateCode();
         for (AstNode stmt : stmts) {
             program = program + stmt.printIntermediateCode();
         }
@@ -37,21 +34,10 @@ class Program extends AstNode {
 
     }
 
-    public static Decl getDecl(String id) {
-        for (Decl decl : decls) {
-            if (decl.getName() == id) {
-                return decl;
-            }
-        }
-        return null;
-    }
-
     public void printAST() {
         System.out.println("\n\nProgram");
         System.out.println("  decls: ");
-        for (Decl decl : decls) {
-            decl.printAST();
-        }
+        // Print the symbolTable TODO
         System.out.println("  stmts: ");
         for (AstNode stmt : stmts) {
             stmt.printAST();
@@ -61,19 +47,14 @@ class Program extends AstNode {
 }
 
 class Scope extends AstNode {
-    List<Decl> decls;
     List<AstNode> stmts;
 
-    public Scope(List<Decl> decls, List<AstNode> stmts) {
-        this.decls = decls;
+    public Scope(List<AstNode> stmts) {
         this.stmts = stmts;
     }
 
     public String printIntermediateCode() {
         String scope = "";
-        for (Decl decl : decls) {
-            scope = scope + decl.printIntermediateCode();
-        }
         for (AstNode stmt : stmts) {
             scope = scope + stmt.printIntermediateCode();
         }
@@ -82,11 +63,6 @@ class Scope extends AstNode {
 
     public void printAST() {
         System.out.println("Scope");
-
-        System.out.println("  decls: ");
-        for (Decl decl : decls) {
-            decl.printAST();
-        }
 
         System.out.println("  stmts: ");
         for (AstNode stmt : stmts) {
@@ -113,7 +89,7 @@ class Decl extends AstNode {
         this.id = id;
         this.expr = expr;
         // Check if the variable and the expression are of the same type
-        if(!expr.getType().equals(type) || type.equals(Type.FLOAT) && expr.getType().equals(Type.INT)){
+        if(!expr.getType().equals(type) && !(type.equals(Type.FLOAT) && expr.getType().equals(Type.INT))){
             throw new IllegalArgumentException("Error: Variable " + id + " and expression " + expr.getValue() + " are not of the same type");
         }
         symbolTable.setVar(this);
@@ -156,7 +132,7 @@ class Assign extends AstNode {
             throw new IllegalArgumentException("Error: Variable " + id + " not declared");
         }
         // Check if the variable and the expression are of the same type
-        if (decl.getType() == expr.getType() || decl.getType() == Type.FLOAT && expr.getType() == Type.INT) {
+        if (!decl.getType().equals(expr.getType()) && !(decl.getType().equals(Type.FLOAT) && expr.getType().equals(Type.INT))) {
             throw new IllegalArgumentException("Error: Variable " + id + " and expression are not of the same type");
         }
 

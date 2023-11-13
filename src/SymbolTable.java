@@ -34,4 +34,13 @@ public class SymbolTable {
         }
         return null;
     }
+
+    public String printIntermediateCode(){
+        String intermediateCode = "";
+        for (Symbol symbol : symbols) {
+            intermediateCode += symbol.getEquivalent() + " = " + symbol.getVar().getValue() + "\n";
+        }
+        return intermediateCode;
+        
+    }
 }

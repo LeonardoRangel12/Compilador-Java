@@ -24,7 +24,6 @@ terminal Type   TYPE;
 terminal OpRel COMP;
 /* Non-terminals */
 non terminal Program        program;
-non terminal List<Decl>     decllist;
 non terminal Scope          scope;
 non terminal Decl           decl;
 non terminal List<AstNode>        stmtlist;
@@ -36,16 +35,13 @@ non terminal Condition           cond;
 
 
 /* Parser rules */
-program ::= decllist:dl stmtlist:sl{: RESULT = new Program(dl, sl); :};
+program ::= stmtlist:sl{: RESULT = new Program(sl); :};
 
-decllist ::= decl:d {: List<Decl> dl = new ArrayList<Decl>(); dl.add(d); RESULT = dl; :}
-           | decllist:dl COMMA decl:d{: dl.add(d); RESULT = dl; :}
-           | {: RESULT = new ArrayList<Decl>(); :};
 
 decl ::= TYPE:type IDENT:id{: RESULT = new Decl(type, id, null); :}
        | TYPE:type IDENT:id ASSIGN expr:e {: RESULT = new Decl(type, id, e); :};
 
-scope ::= BEGIN decllist:dl stmtlist:sl END {: RESULT = new Scope(dl, sl); :};
+scope ::= BEGIN stmtlist:sl END {: RESULT = new Scope(sl); :};
 
 stmtlist ::= stmt:s{: List<AstNode> sl = new ArrayList<AstNode>(); sl.add(s); RESULT = sl; :}
             | stmtlist:sl stmt:s {: sl.add(s); RESULT = sl; :};
@@ -55,6 +51,7 @@ stmt ::= IDENT:id ASSIGN expr:e {: RESULT = new Assign(id, e); :}
         | while:w {: RESULT = w; :}
         | READ LPAR IDENT:id RPAR {: RESULT = new Read(id); :}
         | WRITE LPAR expr:e RPAR  {: RESULT = new Write(e); :}
+        | decl:d {: RESULT = d; :}
         ;
 
 while ::= WHILE cond:c scope:sl {: RESULT = new While(c, sl); :};
