@@ -15,7 +15,7 @@ public class App {
         Lexer lexer = new Lexer(new FileReader(argv[0]), symbolFactory);
         Parser p = new Parser(lexer, symbolFactory);
         System.out.println(p.parse().value);
-        System.out.println("El análisis sintáctico ha finalizado correctamente.");
+        System.out.println("El análisis semcaantico ha finalizado correctamente.");
       } catch (Exception e) {
         e.printStackTrace();
       }

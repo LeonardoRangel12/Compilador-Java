@@ -1,5 +1,5 @@
 int x = 1
-int a = 2
+int a = "a"
 while 3 / 2 == a {
     read(a)
     x = 1
