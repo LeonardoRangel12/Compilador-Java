@@ -7,22 +7,22 @@ public enum OpRel {
     NEQ;
 
     static String getOp(OpRel op){
-        if (op == OpRel.EQ) {
+        if (op == EQ) {
             return "==";
         }
-        if (op == OpRel.NEQ) {
+        if (op == NEQ) {
             return "!=";
         }
-        if (op == OpRel.LE) {
+        if (op == LE) {
             return "<";
         }
-        if (op == OpRel.GT) {
+        if (op == GT) {
             return ">";
         }
-        if (op == OpRel.LEQ) {
+        if (op == LEQ) {
             return "<=";
         }
-        if (op == OpRel.GTQ) {
+        if (op == GTQ) {
             return ">=";
         }
         return "";

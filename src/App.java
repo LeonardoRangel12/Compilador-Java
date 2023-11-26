@@ -14,8 +14,8 @@ public class App {
         ComplexSymbolFactory symbolFactory = new ComplexSymbolFactory();
         Lexer lexer = new Lexer(new FileReader(argv[0]), symbolFactory);
         Parser p = new Parser(lexer, symbolFactory);
-        System.out.println(p.parse().value);
-        System.out.println("El análisis semcaantico ha finalizado correctamente.");
+        p.parse();
+        System.out.println("El análisis semántico ha finalizado correctamente.");
       } catch (Exception e) {
         e.printStackTrace();
       }

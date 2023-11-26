@@ -8,13 +8,13 @@ public interface sym {
   /* terminals */
   public static final int MOD = 19;
   public static final int READ = 11;
-  public static final int IDENT = 27;
+  public static final int IDENT = 28;
   public static final int SEMICOLON = 2;
   public static final int ELSE = 9;
   public static final int PLUS = 15;
-  public static final int STRINGCONST = 28;
+  public static final int STRINGCONST = 29;
   public static final int GTQ = 21;
-  public static final int COMP = 31;
+  public static final int COMP = 27;
   public static final int WHILE = 10;
   public static final int END = 7;
   public static final int INTCONST = 14;
@@ -23,7 +23,7 @@ public interface sym {
   public static final int LE = 24;
   public static final int WRITE = 12;
   public static final int BEGIN = 6;
-  public static final int TYPE = 30;
+  public static final int TYPE = 31;
   public static final int COMMA = 3;
   public static final int MULT = 17;
   public static final int EOF = 0;
@@ -34,7 +34,7 @@ public interface sym {
   public static final int ASSIGN = 13;
   public static final int LEQ = 20;
   public static final int RPAR = 5;
-  public static final int FLOATCONST = 29;
+  public static final int FLOATCONST = 30;
   public static final int NEQ = 23;
   public static final int BINOP = 26;
   public static final int LPAR = 4;
@@ -66,11 +66,11 @@ public interface sym {
   "LE",
   "GT",
   "BINOP",
+  "COMP",
   "IDENT",
   "STRINGCONST",
   "FLOATCONST",
-  "TYPE",
-  "COMP"
+  "TYPE"
   };
 }
 

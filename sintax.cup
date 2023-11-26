@@ -18,10 +18,10 @@ parser code {:
 terminal         SEMICOLON, COMMA, LPAR, RPAR, BEGIN, END,IF, ELSE, WHILE, READ, WRITE, ASSIGN;
 terminal INTCONST, PLUS, MINUS, MULT, DIV, MOD, LEQ, GTQ, EQ, NEQ, LE, GT;
 terminal OpArit BINOP;
+terminal OpRel COMP;
 terminal String  IDENT,STRINGCONST;
 terminal Float  FLOATCONST;
 terminal Type   TYPE;
-terminal OpRel COMP;
 /* Non-terminals */
 non terminal Program        program;
 non terminal Scope          scope;
@@ -31,6 +31,7 @@ non terminal AstNode        stmt;
 non terminal While          while;
 non terminal If             if;
 non terminal Expr           expr;
+non terminal Atom          atom;
 non terminal Condition           cond;
 
 
@@ -59,12 +60,14 @@ while ::= WHILE cond:c scope:sl {: RESULT = new While(c, sl); :};
 if ::= IF cond:c scope:sl ELSE scope:sl2 {: RESULT = new If(c, sl); :}
       | IF cond:c scope:sl {: RESULT = new If(c, sl); :};
 
-expr ::= INTCONST:i {: RESULT = new Expr(i, Type.INT); :}
-        | FLOATCONST:f {: RESULT = new Expr(f, Type.FLOAT); :}
-        | STRINGCONST:s {: RESULT = new Expr(s, Type.STRING); :}
-        | IDENT:id {: RESULT = new Expr(id, Type.IDENT); :}
+expr ::= atom:a {: RESULT = new Expr(a);:}
         | expr:e BINOP:OP expr:e2 {: RESULT = new Expr(e, OP, e2); :}
         | LPAR expr:e RPAR {: RESULT = e; :};
+
+atom ::= INTCONST:i {: RESULT = new Atom(i, Type.INT); :}
+        | FLOATCONST:f {: RESULT = new Atom(f, Type.FLOAT); :}
+        | STRINGCONST:s {: RESULT = new Atom(s, Type.STRING); :}
+        | IDENT:id {: RESULT = new Atom(id, Type.IDENT); :};
 
 cond ::= expr:e COMP:comp expr:e2 {: RESULT = new Condition(e, comp, e2); :};
 
