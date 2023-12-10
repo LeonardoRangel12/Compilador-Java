@@ -1,7 +1,11 @@
 int n1 = 1
-int n2 = 3
+int n2 = 2
 int result = n1 + n2 + 2
-int result2 = result + n1 + 3 + 4
+int result2 = result + n1 + 3 + 45
 if result > n1{
     write("Es mayor")
 }
+while n2 < n1{
+    write("Es menor")
+}
+write(n1)

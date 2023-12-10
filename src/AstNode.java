@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import jflex.base.Pair;
-
 abstract class AstNode {
     // static int varCont = 0;
     static int structureCont = 0;
@@ -93,14 +91,18 @@ class SetValue extends AstNode {
     Expr expr;
 
     public SetValue(String id, Expr expr) {
+
+        if (!expr.validateInput())
+            throw new IllegalArgumentException("Error: Cannot assign string to int or float");
+
         this.id = id;
         this.expr = expr;
     }
 
     public String printIntermediateCode() {
-        String response = "";
+        String response = "\n";
         if (expr != null) {
-            response = expr.printSetValueIntermediateCode();
+            response = expr.printSetValueIntermediateCode() + "\n";
         }
         return response;
     }
@@ -115,13 +117,14 @@ class Assign extends SetValue {
         if (decl == null) {
             throw new IllegalArgumentException("Error: Variable " + id + " not declared");
         }
-        // Check if the variable and the expression are of the same type
-        // if (!decl.getType().equals(expr.getType()) &&
-        // !(decl.getType().equals(Type.FLOAT) && expr.getType().equals(Type.INT)) &&
-        // !(decl.getType().equals(Type.INT) && expr.getType().equals(Type.FLOAT))) {
-        // throw new IllegalArgumentException("Error: Variable " + id + " and expression
-        // are not of the same type");
-        // }
+
+        // Check if the types are the same
+        if (!decl.getType().equals(expr.getType())
+                && !(decl.getType().equals(Type.FLOAT) && expr.getType().equals(Type.INT))) {
+            throw new IllegalArgumentException(
+                    "Error: Variable " + id + " is not of the same type as " + expr.getValue());
+        }
+
     }
 
     public void printAST() {
@@ -143,6 +146,7 @@ class Decl extends SetValue {
 
     public Decl(Type type, String id, Expr expr) {
         super(id, expr);
+
         this.type = type;
         symbolTable.setVar(this);
     }
@@ -286,10 +290,32 @@ class Expr extends AstNode {
 
     public Expr(Expr e1, OpArit OP, Expr e2) {
         this.left = e1;
-
         this.op = OP;
-
         this.right = e2;
+    }
+
+    public Boolean validateInput() {
+        if (left instanceof Expr) {
+            if (!((Expr) left).validateInput()) {
+                return false;
+            }
+        }
+        if (right instanceof Expr) {
+            if (!((Expr) right).validateInput()) {
+                return false;
+            }
+        }
+        if (left instanceof Atom) {
+            if (((Atom) left).getType() == Type.STRING) {
+                return false;
+            }
+        }
+        if (right instanceof Atom) {
+            if (((Atom) right).getType() == Type.STRING) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public AstNode getLeft() {
